@@ -1,0 +1,15 @@
+{
+   "name": "quiz-bank-creator",
+   "version": "1.0.0",
+   "description": "Makes quiz banks for D2L",
+   "main": "index.html",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "templates": "handlebars templates -f ./templates/hbTemplates.js"
+   },
+   "author": "Joshua McKinney and Kiven",
+   "license": "UNLICENSED",
+   "dependencies": {
+      "handlebars": "^4.0.5"
+   }
+}

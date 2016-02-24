@@ -1,0 +1,33 @@
+<item d2l_2p0:id="2" ident="OBJ_1858834" label="QUES_571490_611497" d2l_2p0:page="1" title="{{QuestionName}} . 1">
+	<itemmetadata>
+		<qtimetadata>
+			<qti_metadatafield>
+				<fieldlabel>qmd_computerscored</fieldlabel>
+				<fieldentry>yes</fieldentry>
+			</qti_metadatafield>
+			<qti_metadatafield>
+				<fieldlabel>qmd_questiontype</fieldlabel>
+				<fieldentry>Fill in the Blanks</fieldentry>
+			</qti_metadatafield>
+			<qti_metadatafield>
+				<fieldlabel>qmd_weighting</fieldlabel>
+				<fieldentry>1.000000000</fieldentry>
+			</qti_metadatafield>
+			<qti_metadatafield>
+				<fieldlabel>qmd_globalid</fieldlabel>
+				<fieldentry>25fb18ef-2013-4926-80e3-af09764958c3</fieldentry>
+			</qti_metadatafield>
+			<qti_metadatafield>
+				<fieldlabel>qmd_displayid</fieldlabel>
+			</qti_metadatafield>
+		</qtimetadata>
+	</itemmetadata>
+	<itemproc_extension>
+		<d2l_2p0:difficulty>1</d2l_2p0:difficulty>
+		<d2l_2p0:isbonus>no</d2l_2p0:isbonus>
+		<d2l_2p0:ismandatory>no</d2l_2p0:ismandatory>
+	</itemproc_extension>
+
+	//the text shell goes here
+
+</item>

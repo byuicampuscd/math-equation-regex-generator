@@ -1,0 +1,20 @@
+{
+   "name": "number-range-regex",
+   "version": "1.0.0",
+   "description": "This converts number with a tolerance into a regular expression that matches it",
+   "main": "matchNumberRangeRegex.js",
+   "dependencies": {
+      "deep-equal": "^1.0.1",
+      "trie-hard": "^0.1.0"
+   },
+   "devDependencies": {
+      "coffeeify": "^2.0.1"
+   },
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "makeBrowser": "browserify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js",
+      "server": "live-server --port=9001"
+   },
+   "author": "Joshua McKinney",
+   "license": "UNLICENCED"
+}

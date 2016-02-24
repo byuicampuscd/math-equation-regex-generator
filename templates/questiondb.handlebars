@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <questestinterop>
+      <objectbank ident="QLIB_53767" xmlns:d2l_2p0="http://desire2learn.com/xsd/d2lcp_v2p0">
+         <section d2l_2p0:id="1" ident="SECT_1858833" title="{{bankTitle}}">
+            <sectionproc_extension>
+               <d2l_2p0:display_section_name>no</d2l_2p0:display_section_name>
+               <d2l_2p0:display_section_line>no</d2l_2p0:display_section_line>
+               <d2l_2p0:type_display_section>0</d2l_2p0:type_display_section>
+            </sectionproc_extension>
+            {{#each questions}}
+            <item d2l_2p0:id="{{plusTwo @index}}" ident="{{../bankId}}_Q_{{plusOne @index}}_Id" label="{{../bankId}}_Q_{{plusOne @index}}_Label" d2l_2p0:page="1" title="{{../bankTitle}} {{plusOne @index}}">
+               <itemmetadata>
+                  <qtimetadata>
+                     <qti_metadatafield>
+                        <fieldlabel>qmd_computerscored</fieldlabel>
+                        <fieldentry>yes</fieldentry>
+                     </qti_metadatafield>
+                     <qti_metadatafield>
+                        <fieldlabel>qmd_questiontype</fieldlabel>
+                        <fieldentry>Fill in the Blanks</fieldentry>
+                     </qti_metadatafield>
+                     <qti_metadatafield>
+                        <fieldlabel>qmd_weighting</fieldlabel>
+                        <fieldentry>1.000000000</fieldentry>
+                     </qti_metadatafield>
+                     <qti_metadatafield>
+                        <fieldlabel>qmd_globalid</fieldlabel>
+                        <fieldentry>25fb18ef-2013-4926-80e3-af09764958c3</fieldentry>
+                     </qti_metadatafield>
+                     <qti_metadatafield>
+                        <fieldlabel>qmd_displayid</fieldlabel>
+                     </qti_metadatafield>
+                  </qtimetadata>
+               </itemmetadata>
+               <itemproc_extension>
+                  <d2l_2p0:difficulty>1</d2l_2p0:difficulty>
+                  <d2l_2p0:isbonus>no</d2l_2p0:isbonus>
+                  <d2l_2p0:ismandatory>no</d2l_2p0:ismandatory>
+               </itemproc_extension>
+               <presentation>
+                  <flow>
+                     {{#each blanks}} {{#if text}}
+                     <material>
+                        <mattext texttype="text/html">{{text}}</mattext>
+                     </material>
+                     {{/if}} {{#if answer}}
+                     <response_str ident="{{../../bankId}}_Q_{{plusOne @../index}}_Blank_{{plusOne @index}}_STR" rcardinality="Single">
+                        <render_fib rows="1" columns="10" prompt="Box" fibtype="String">
+                           <response_label ident="{{../../bankId}}_Q_{{plusOne @../index}}_Blank_{{plusOne @index}}_ANS" />
+                        </render_fib>
+                     </response_str>
+                     {{/if}} {{/each}}
+                  </flow>
+               </presentation>
+               <resprocessing>
+                  <outcomes>
+                     {{outcomes blanks}}
+                  </outcomes>
+                  {{#each blanks}}
+                  <respcondition>
+                     <conditionvar>
+                        <varequal respident="{{../../bankId}}_Q_{{plusOne @../index}}_Blank_{{plusOne @index}}_ANS" case="no">{{answer}}</varequal>
+                        {{#if isRegEx}}
+                        <var_extension>
+                           <d2l_2p0:answer_is_regexp>yes</d2l_2p0:answer_is_regexp>
+                        </var_extension>
+                        {{/if}}
+                     </conditionvar>
+                     <setvar action="Set">{{percent}}0000000</setvar>
+                  </respcondition>
+                  {{/each}}
+               </resprocessing>
+            </item>
+
+            {{/each}}
+         </section>
+      </objectbank>
+   </questestinterop>

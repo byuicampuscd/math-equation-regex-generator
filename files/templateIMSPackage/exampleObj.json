@@ -1,0 +1,56 @@
+{
+	"vars": {
+		"a": [1, 2, 3, 4],
+		"b": [1, 2, 3, 4],
+	},
+	"answers": [{
+		"tol": 5,
+		"dec": 0,
+		"answerVals": [1, 2, 3, 4],
+		"text": "questionContent",
+	}, {
+		"tol": 5,
+		"dec": 0,
+		"answerVals": [1, 2, 3, 4],
+		"text": "questionContent",
+	}]
+
+}
+
+{
+	name:"coolname",
+ questions:[{
+	"vars": {
+		"a": 1,
+		"b": 1,
+	},
+	"answers": [{
+		"tol": 5,
+		"dec": 0,
+		"answerVals": 1,
+		"text": "questionContent",
+	}, {
+		"tol": 5,
+		"dec": 0,
+		"answerVals": 1,
+		"text": "questionContent",
+	}]
+
+}, {
+	"vars": {
+		"a": 2,
+		"b": 2,
+	},
+	"answers": [{
+		"tol": 5,
+		"dec": 0,
+		"answerVals": 2,
+		"text": "questionContent",
+	}, {
+		"tol": 5,
+		"dec": 0,
+		"answerVals": 2,
+		"text": "questionContent",
+	}]
+
+}]}

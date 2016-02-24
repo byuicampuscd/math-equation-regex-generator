@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="utf-8">
+   <title>Make questiondb template</title>
+   <link type="text/css" rel="stylesheet" href="style.css" />
+   <script src="node_modules/handlebars/dist/handlebars.js"></script>
+   <script src="helpers.js"></script>
+   <script src="templates/hbTemplates.js"></script>
+   <script src="uiDataToQDbData.js"></script>
+   <script src="matchNumberRange/dist/matchNumberRegexBrowser.js"></script>
+   <script src="makeZipFile/FileSaver/FileSaver.js"></script>
+   <script src="makeZipFile/jsbeautify-html/beautify-html.js"></script>
+   <script src="makeZipFile/jszip/dist/jszip.min.js"></script>
+   <script src="makeZipFile/makeZipFile.js"></script>
+   <script src="uiLogic.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
+   <script src="parseCSV.js"></script>
+   <!--For Testing-->
+   <script src="templates/questiondb.js"></script>
+
+   <script>
+
+
+   </script>
+</head>
+
+<body>
+   <textarea id="csvIn"></textarea>
+   <button id="parseCSVUI" onclick="parseCSV($('#csvIn').val())">Parse CSV Data</button>
+   <button id="runUI" onclick="processTemplate()">Make Zip File</button>
+   <h2>Question Bank Title</h2>
+   <input type="text" id="bankTitleUI" value="BankTitle" />
+
+   <h2>Variables in JSON format</h2>
+   <textarea id="variablesUI">{"a":[1,2,3,4,5], "b":[1,2,3,4,5]}</textarea>
+
+   <h2>Question Content</h2>
+   <input id="addBlankNumberUI" type="number" min="1" max="20" step="1" value="5">
+   <button id="addBlankButtonUI" onclick="addBlanks()">Add Blanks(rename)</button>
+   <div id="blanksWraperUI"></div>
+
+
+
+
+   <!--For Testing-->
+   <script src="csvTemplate.js"></script>
+</body>
+
+</html>

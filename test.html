@@ -1,0 +1,48 @@
+<html>
+
+<head>
+   <title> Regex </title>
+   <meta charset="utf-8">
+   <link rel="stylesheet" type="text/css" href="style.css">
+   <script src="matchNumberRange/dist/matchNumberRegexBrowser.js"></script>
+   <script src="node_modules/handlebars/dist/handlebars.js"></script>
+   <script src="numberBlanks.js"></script>
+   <script src="processTemplate.js"></script>
+   <script>
+      console.log(matchNumberRegex);
+      console.log(matchNumberRegex.fromTolerance(130.25, 45, 2));
+
+   </script>
+
+
+</head>
+
+<body>
+   <div id="fileName">
+      <h2> folder name </h2>
+      <textarea id="filename" rows="1"></textarea>
+   </div>
+
+   <div id="questionTitle">
+      <h2> question name  </h2>
+      <textarea id="questiontitle" rows="1"> </textarea>
+   </div>
+
+
+   <div id="Variables">
+      <h2> variables </h2>
+      <textarea id="variables">{"a":[1,2,3,4,5], "b":[1,2,3,4,5]}</textarea>
+   </div>
+   <br/>
+   <input id="numBlank" type="number" min="1" max="20" step="1">
+   <button id="blankButton" onclick="numberBlanks()"> Add Blanks </button>
+   <button id="blankButton" onclick="processTemplate()"> Template process </button>
+
+
+   <div id="blank"></div>
+   <button id="test" onclick="calculatePercent()">test</button>
+
+</body>
+
+
+</html>

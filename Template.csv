@@ -1,0 +1,22 @@
+bankTitle,BankTitle,,,
+,,,,
+variables,,,,
+a,1,2,3,4
+b,1,2,3,4
+,,,,
+blanks,,,,
+text,"<h1>hi</h1>var a: {{a}}, var b: {{b}}, Text Above Blank 1",,,
+answers,1,2,3,4
+isRegEx,TRUE,,,
+tolerance,5,,,
+numOfDigits,0,,,
+,,,,
+text,var a: {{a}} Text Above Blank 2,,,
+answers upper,1.5,2.5,3.5,4.5
+answers lower,0.5,1.5,2.5,3.5
+isRegEx,TRUE,,,
+numOfDigits,0,,,
+,,,,
+text,"var b: {{b}}, Text Above Blank 3",,,
+answers,hi1,hi2,hi3,hi4
+isRegEx,FALSE,,,

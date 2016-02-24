@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<questestinterop>
+		<objectbank ident="QLIB_53767" xmlns:d2l_2p0="http://desire2learn.com/xsd/d2lcp_v2p0">
+			<section d2l_2p0:id="1" ident="SECT_1858833" title="{{folderName}}">
+				<sectionproc_extension>
+					<d2l_2p0:display_section_name>no</d2l_2p0:display_section_name>
+					<d2l_2p0:display_section_line>no</d2l_2p0:display_section_line>
+					<d2l_2p0:type_display_section>0</d2l_2p0:type_display_section>
+				</sectionproc_extension>
+				<item d2l_2p0:id="2" ident="OBJ_1858834" label="QUES_571490_611497" d2l_2p0:page="1" title="{{QuestionName}} . 1">
+					<itemmetadata>
+						<qtimetadata>
+							<qti_metadatafield>
+								<fieldlabel>qmd_computerscored</fieldlabel>
+								<fieldentry>yes</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_questiontype</fieldlabel>
+								<fieldentry>Fill in the Blanks</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_weighting</fieldlabel>
+								<fieldentry>1.000000000</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_globalid</fieldlabel>
+								<fieldentry>25fb18ef-2013-4926-80e3-af09764958c3</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_displayid</fieldlabel>
+							</qti_metadatafield>
+						</qtimetadata>
+					</itemmetadata>
+					<itemproc_extension>
+						<d2l_2p0:difficulty>1</d2l_2p0:difficulty>
+						<d2l_2p0:isbonus>no</d2l_2p0:isbonus>
+						<d2l_2p0:ismandatory>no</d2l_2p0:ismandatory>
+					</itemproc_extension>
+					<presentation>
+						<flow>
+							<material>
+								<mattext texttype="text/html">&lt;p&gt;&lt;img src="{{imageLocation}}" /&gt;&lt;/p&gt; &lt;p&gt;{{questionContent}}</mattext>
+							</material>
+							<response_str ident="QUES_571490_611497_A1860052_STR" rcardinality="Single">
+								<render_fib rows="1" columns="10" prompt="Box" fibtype="String">
+									<response_label ident="QUES_571490_611497_A1860052_ANS" />
+								</render_fib>
+							</response_str>
+							<material>
+								<mattext texttype="text/html">&lt;p&gt;&lt;img src="{{imageLocation}}" /&gt;&lt;/p&gt; &lt;p&gt;{{question}}</mattext>
+							</material>
+							<response_str ident="QUES_571490_611497_A1860054_STR" rcardinality="Single">
+								<render_fib rows="1" columns="10" prompt="Box" fibtype="String">
+									<response_label ident="QUES_571490_611497_A1860054_ANS" />
+								</render_fib>
+							</response_str>
+							<material>
+								<mattext texttype="text/html">{{CONTENT3}}</mattext>
+							</material>
+						</flow>
+					</presentation>
+					<resprocessing>
+						<outcomes>
+							<decvar vartype="Integer" minvalue="0" maxvalue="100" varname="Blank_1" />
+							<decvar vartype="Integer" minvalue="0" maxvalue="100" varname="Blank_2" />
+						</outcomes>
+						<respcondition>
+							<conditionvar>
+								<varequal respident="QUES_571490_611497_A1860052_ANS" case="no">{{answer1}}</varequal>
+								<var_extension>
+									<d2l_2p0:answer_is_regexp>yes</d2l_2p0:answer_is_regexp>
+								</var_extension>
+							</conditionvar>
+							<setvar action="Set">{{50}}</setvar>
+						</respcondition>
+						<respcondition>
+							<conditionvar>
+								<varequal respident="QUES_571490_611497_A1860054_ANS" case="no">{{answer2}}</varequal>
+								<var_extension>
+									<d2l_2p0:answer_is_regexp>yes</d2l_2p0:answer_is_regexp>
+								</var_extension>
+							</conditionvar>
+							<setvar action="Set">{{percent}}</setvar>
+						</respcondition>
+					</resprocessing>
+				</item>
+				<item d2l_2p0:id="4" ident="OBJ_1858835" label="QUES_571491_611498" d2l_2p0:page="1" title="4.5POQ1 . 2">
+					<itemmetadata>
+						<qtimetadata>
+							<qti_metadatafield>
+								<fieldlabel>qmd_computerscored</fieldlabel>
+								<fieldentry>yes</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_questiontype</fieldlabel>
+								<fieldentry>Fill in the Blanks</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_weighting</fieldlabel>
+								<fieldentry>1.000000000</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_globalid</fieldlabel>
+								<fieldentry>3195e68b-932a-4531-8d07-86229afd5b33</fieldentry>
+							</qti_metadatafield>
+							<qti_metadatafield>
+								<fieldlabel>qmd_displayid</fieldlabel>
+								<fieldentry>Online.Reference.ME 172-239</fieldentry>
+							</qti_metadatafield>
+						</qtimetadata>
+					</itemmetadata>
+					<itemproc_extension>
+						<d2l_2p0:difficulty>1</d2l_2p0:difficulty>
+						<d2l_2p0:isbonus>no</d2l_2p0:isbonus>
+						<d2l_2p0:ismandatory>no</d2l_2p0:ismandatory>
+					</itemproc_extension>
+					<presentation>
+						<flow>
+							<material>
+								<mattext texttype="text/html">&lt;p&gt;&lt;img src="Course%20Files/Images/4.5Ponder%20Inside%20Graphic.jpg" alt="" title="" width="70%/" /&gt;&lt;/p&gt; &lt;p&gt;Create a fully defined sketch as shown in the figure making sure to capture design intent.Use the following dimensions:&lt;/p&gt; &lt;p&gt;A = 70 mm, B = 60 mm, C = 10 mm, D = 4 mm&lt;/p&gt; &lt;p&gt;Determine the Area of the sketch. &amp;nbsp;Round your answer&amp;nbsp;to 2 decimal places.&amp;nbsp;&lt;/p&gt;</mattext>
+							</material>
+							<response_str ident="QUES_571491_611498_A1860057_STR" rcardinality="Single">
+								<render_fib rows="1" columns="10" prompt="Box" fibtype="String">
+									<response_label ident="QUES_571491_611498_A1860057_ANS" />
+								</render_fib>
+							</response_str>
+							<material>
+								<mattext texttype="text/html">&lt;p&gt;mm&lt;sup&gt;2&lt;/sup&gt;&lt;/p&gt; &lt;p&gt;Determine the Y-coordinate of the centroid of the sketch. &amp;nbsp; Round your answer to 2 decimal places.&lt;strong&gt;(Note that the answer is multiplied by 10&lt;sup&gt;-1&lt;/sup&gt;)&lt;/strong&gt;&lt;/p&gt;</mattext>
+							</material>
+							<response_str ident="QUES_571491_611498_A1860059_STR" rcardinality="Single">
+								<render_fib rows="1" columns="10" prompt="Box" fibtype="String">
+									<response_label ident="QUES_571491_611498_A1860059_ANS" />
+								</render_fib>
+							</response_str>
+							<material>
+								<mattext texttype="text/html">x 10&lt;sup&gt;-1&lt;/sup&gt; mm&lt;sup&gt;2&lt;/sup&gt;</mattext>
+							</material>
+						</flow>
+					</presentation>
+					<resprocessing>
+						<outcomes>
+							<decvar vartype="Integer" minvalue="0" maxvalue="100" varname="Blank_1" />
+							<decvar vartype="Integer" minvalue="0" maxvalue="100" varname="Blank_2" />
+						</outcomes>
+						<respcondition>
+							<conditionvar>
+								<varequal respident="QUES_571491_611498_A1860057_ANS" case="no">^0*3(0(8[7-9]|9\d)|10[0-2])(\.[0-9]*|\.?)$</varequal>
+								<var_extension>
+									<d2l_2p0:answer_is_regexp>yes</d2l_2p0:answer_is_regexp>
+								</var_extension>
+							</conditionvar>
+							<setvar action="Set">50.000000000</setvar>
+						</respcondition>
+						<respcondition>
+							<conditionvar>
+								<varequal respident="QUES_571491_611498_A1860059_ANS" case="no">^0*3\.(29[8-9]|3(0\d|1[0-5]))\d*$</varequal>
+								<var_extension>
+									<d2l_2p0:answer_is_regexp>yes</d2l_2p0:answer_is_regexp>
+								</var_extension>
+							</conditionvar>
+							<setvar action="Set">50.000000000</setvar>
+						</respcondition>
+					</resprocessing>
+				</item>
+
+			</section>
+		</objectbank>
+	</questestinterop>

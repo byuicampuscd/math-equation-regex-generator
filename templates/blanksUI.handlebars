@@ -1,0 +1,28 @@
+{{#each blanks}}
+<div class="blank">
+   <div class="deleteMe">x</div>
+   <h3>Question Text</h3>
+   <textarea class="text">{{text}}</textarea>
+
+   <h3>List of answers for blank</h3>
+   <textarea class="answers">[{{answers}}]</textarea>
+   <lable>
+      <input type="checkbox" class="isRegEx" {{#if isRegEx}}checked{{/if}}> Convert number answers to regular expressions
+   </lable>
+
+   <h3>Tolerance</h3>
+   <input type="text" class="tolerance" value="{{tolerance}}">
+
+   <h3>Place value behind the decimal to round to</h3>
+   <select class="numOfDigits">
+      <option value="0" selected>0 Decimal</option>
+      <option value="1">0.1</option>
+      <option value="2">0.01</option>
+      <option value="3">0.001</option>
+      <option value="4">0.0001</option>
+      <option value="5">0.00001</option>
+      <option value="6">0.000001</option>
+      <option value="7">0.0000001</option>
+   </select>
+</div>
+{{/each}}
