@@ -160,8 +160,9 @@ var parseCSV = (function () {
             blanks: parseBlanks(csvArray)
          };
 
-      console.log(csvArray);
-      console.log(csvObj);
+      console.log("csvArray:", csvArray);
+      console.log("csvObj:", csvObj);
+      return csvObj;
 
    };
 }());

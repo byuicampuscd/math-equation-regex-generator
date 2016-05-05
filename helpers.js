@@ -26,6 +26,15 @@
 
       plusTwo: function (indexIn) {
          return parseInt(indexIn, 10) + 2;
+      },
+
+      jsonString: function (obj) {
+         if (typeof obj === 'object') {
+            return JSON.stringify(obj);
+         } else {
+            return obj.toString();
+         }
+
       }
    };
 

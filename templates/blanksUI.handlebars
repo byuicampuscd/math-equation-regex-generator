@@ -5,7 +5,7 @@
    <textarea class="text">{{text}}</textarea>
 
    <h3>List of answers for blank</h3>
-   <textarea class="answers">[{{answers}}]</textarea>
+   <textarea class="answers">{{jsonString answers}}</textarea>
    <lable>
       <input type="checkbox" class="isRegEx" {{#if isRegEx}}checked{{/if}}> Convert number answers to regular expressions
    </lable>

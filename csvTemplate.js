@@ -1,4 +1,4 @@
-var CSVtemplate = 'bank Title,BankTitle,,,\n\
+var CSVtemplate = 'bank Title,NEWBankTitle,,,\n\
 ,,,,\n\
 variables,,,,\n\
 a,1,2,3,4\n\

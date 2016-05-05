@@ -1,35 +1,83 @@
 * {
    box-sizing: border-box;
+   padding: 0px;
+   margin: 0px;
 }
+
+/*Set global fonts for application*/
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label,
+textarea,
+input,
+button {
+   font-family: Helvetica, "Century Gothic", Arial, sans-serif;
+   font-weight: 100;
+}
+
+h1, 
+h2 {
+   margin-top: 15px;
+   margin-bottom: 15px;
+}
+
+body {
+   padding-left: 200px;
+   padding-top: 50px;
+}
+
 #blanksWraperUI {
    margin-top: 30px;
    margin-left: 20px;
 }
-.deleteMe {
-   width: 18px;
-   height: 15px;
-   background-color: #e64040;
-   font-family: sans-serif;
-   font-size: 15px;
-   text-align: center;
-   line-height: 11px;
-   font-weight: bold;
-   position: absolute;
-   left: -25px;
-   top: -2px;
-   border-radius: 2px;
-   color: #333;
+
+
+/*Strip appearance*/
+label,
+textarea,
+input,
+button {
+   -webkit-appearance: none;
+   -moz-appearance: none;
+   appearance: none;
 }
-lable {
+
+label,
+textarea,
+input {
    display: block;
+   margin: 15px 0px;
+   border: 1px solid #dddddd;
+   display: block;
+   margin: 0px 0px 25px 0px;
+   padding: 5px;
+   width: 300px;
 }
-h3 {
-   margin-top: 15px;
-   margin-bottom: 0;
+
+textarea {
+   height: 150px;
+   width: 300px;
+   resize: none;
 }
-h3:first-of-type {
-   margin-top: 0;
+
+button {
+   margin-bottom: 15px;
+   padding: 5px;
+   border-radius: 2.5px;
+   background: #0076C6;
+   color: #FFF;
+   border: 2px solid #0066ab;
 }
+
+button:active {   
+   border: 2px solid #0076C6;
+   background: #006bb3;
+}
+
 .blank {
    position: relative;
    padding: 10px;
@@ -38,13 +86,3 @@ h3:first-of-type {
    border: 1px solid #888;
    border-radius: 5px;
 }
-textarea {
-   width: 300px;
-   height: 100px;
-}
-
-/*
-.answer:nth-of-type(odd) {
-   background-color: rgba(100, 149, 237, 0.68);
-   border-bottom-color: #555
-}*/

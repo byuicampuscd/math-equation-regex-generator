@@ -41,6 +41,18 @@ function makeBlanks(dataArray) {
 
 }
 
+function proccessCSVData(csvData) {
+   "use strict";
+   //update the title
+   $('#bankTitleUI').val(csvData.bankTitle);
+
+   //update the variables
+   $('#variablesUI').val(JSON.stringify(csvData.variables, null, 3));
+
+   //make the blanks
+   makeBlanks(csvData);
+}
+
 function addBlanks() {
    "use strict";
    var numBlanksToAdd = parseInt(document.getElementById('addBlankNumberUI').value, 10),
