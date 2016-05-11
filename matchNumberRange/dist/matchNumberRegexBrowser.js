@@ -180,7 +180,6 @@ module.exports = (function () {
             number = number * Math.pow(10, Math.abs(numOfDigits));
          } else {
             //scale down
-            console.log(number);
             if (number.toFixed(0).length <= numOfDigits) {
                throw "numOfDigits is too high. number: " + number + " numOfDigits: " + numOfDigits;
             }

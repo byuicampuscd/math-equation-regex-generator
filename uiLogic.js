@@ -83,31 +83,30 @@ function addBlanks() {
 
 function processTemplate() {
    "use strict";
-   function makeTolerance(tolIn){
-      if(tolIn === ''){
+
+   function makeTolerance(tolIn) {
+      if (tolIn === '') {
          return tolIn;
       }
-      
+
       var num = parseFloat(tolIn),
-          numIsNotNan = !isNaN(num);
-      
-      
-      console.log('num:',num);
-      console.log('numIsNotNan:',numIsNotNan);
-      console.log('tolIn:',tolIn);
-      
-      if(numIsNotNan && typeof tolIn === 'string'){
-         if(tolIn.charAt(tolIn.length) === '%'){
+         numIsNotNan = !isNaN(num);
+
+      console.log('num:', num);
+      console.log('numIsNotNan:', numIsNotNan);
+      console.log('tolIn:', tolIn);
+
+      if (numIsNotNan && typeof tolIn === 'string') {
+         if (tolIn.charAt(tolIn.length) === '%') {
             return tolIn;
-         } else if(numIsNotNan) {
+         } else if (numIsNotNan) {
             return num;
-         } 
+         }
       }
-      
-      //TODO give better feedback
-      throw 'not valid tolerance. SSEE'
+
+      throw "ERROR NOT VALID TOLERANCE - num: " + num + " numIsNootNan: " + numIsNotNan + " tolIn: " + tolIn;
    }
-   
+
    var variables,
       numberOfBlanks = $('.blank').length,
       i,

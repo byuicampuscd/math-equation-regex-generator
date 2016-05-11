@@ -14,12 +14,12 @@ function uiDataToQDbData(dataFromUI) {
       if (typeof answer === 'string') {
          return answer;
       } else if (blank.isRegEx && typeof answer === 'object') {
-         //TODO Make sure answer.lower, answer.upper exists 
+         console.log("ANSWER BOUNDS:" + answer.lower + " " + answer.upper);
          return matchNumberRegex.fromBounds(answer.lower, answer.upper, blank.numOfDigits);
       } else if (blank.isRegEx && typeof blank.tolerance !== 'undefined') {
-         console.log('answer:',answer);
-         console.log('blank.tolerance:',blank.tolerance);
-         console.log('blank.numOfDigits:',blank.numOfDigits);
+         console.log('answer:', answer);
+         console.log('blank.tolerance:', blank.tolerance);
+         console.log('blank.numOfDigits:', blank.numOfDigits);
          return matchNumberRegex.fromTolerance(answer, blank.tolerance, blank.numOfDigits);
       } else {
          throw "Answer " + setIndex + " in blank " + blankIndex + " is not in correct form. Answer: " + answer;
@@ -56,8 +56,7 @@ function uiDataToQDbData(dataFromUI) {
 
    //check for error
    if (!allSameLength) {
-      //TODO add better feed back to user - throw an error
-      return;
+      throw "There was an ERROR with processing the variables of the question. See: " + numberOfQuestions;
    }
 
    /****************************WE PASSED MAKE NEW OBJECT!*******************/
@@ -65,8 +64,7 @@ function uiDataToQDbData(dataFromUI) {
    objectOut.bankTitle = dataFromUI.bankTitle;
 
    //bankId
-   //TODO MAKE THE DATE NOT JUST RANDOM
-   objectOut.bankId = "BankGen_" + Math.floor(Math.random() * 1000000);
+   objectOut.bankId = "BankGen_" + Date.now();
 
    /**************************** COMPILE QUESTION DATA *******************/
    //make variableSets
