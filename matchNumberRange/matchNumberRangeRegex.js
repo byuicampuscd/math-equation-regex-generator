@@ -179,6 +179,7 @@ module.exports = (function () {
             number = number * Math.pow(10, Math.abs(numOfDigits));
          } else {
             //scale down
+            console.log(number);
             if (number.toFixed(0).length <= numOfDigits) {
                throw "numOfDigits is too high. number: " + number + " numOfDigits: " + numOfDigits;
             }
@@ -222,14 +223,20 @@ module.exports = (function () {
    }
 
    function makeBoundsFromTol(answer, tolerance, numOfDigits) {
-      var lower, upper, tol;
+      var lower, 
+          upper, 
+          tol;     
+         
       if (typeof tolerance === 'string' && tolerance.trim().charAt(tolerance.length - 1) === '%') {
          //if it is a percent
          tol = parseFloat(tolerance) / 100 * answer;
+         
       } else if (typeof tolerance === 'number' && !isNaN(tolerance)) {
          //if is just a number
          tol = tolerance;
+         console.log("ya");
       } else {
+         console.log("Error:", typeof tolerance, answer);
          throw "Invalid tolerance";
       }
 

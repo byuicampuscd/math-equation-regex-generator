@@ -3,7 +3,7 @@
 
 <head>
    <meta charset="utf-8">
-   <title>Make questiondb template</title>
+   <title>Make QuestionDB</title>
    <script src="node_modules/handlebars/dist/handlebars.min.js"></script>
    <script src="helpers.js"></script>
    <script src="templates/hbTemplates.js"></script>
@@ -34,7 +34,7 @@
    <button id="runUI" onclick="processTemplate()">Make Zip File</button>
    
    <h2>Question Bank Title</h2>
-   <input required type="text" id="bankTitleUI" placeholder="Type title here.." />
+   <input required type="text" id="bankTitleUI" value="MATH" />
 
    <h2>Variables in JSON format</h2>
    <textarea id="variablesUI">{"a":[1,2,3,4,5], "b":[1,2,3,4,5]}</textarea>
@@ -44,7 +44,6 @@
    <button id="addBlankButtonUI" onclick="addBlanks()">Add Blanks(rename)</button>
    
    <div id="blanksWraperUI"></div>
-
 
    <!--For Testing-->
    <script src="csvTemplate.js"></script>

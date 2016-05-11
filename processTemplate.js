@@ -6,7 +6,7 @@ var processTemplate = (function () {
 	return function questionCount() {
 		var questionBank = JSON.parse(document.getElementById('variables').value),
 			numberQuestions;
-		console.log(questionBank);
+		console.log("questionBank",questionBank);
 
 		numberQuestions = questionBank.a;
 		return numberQuestions.length;

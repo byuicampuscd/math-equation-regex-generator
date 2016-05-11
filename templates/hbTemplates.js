@@ -3,7 +3,7 @@
 templates['blanksUI'] = template({"1":function(container,depth0,helpers,partials,data) {
     var stack1, helper, alias1=depth0 != null ? depth0 : {}, alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
 
-  return "<div class=\"blank\">\r\n   <div class=\"deleteMe\">x</div>\r\n   <h3>Question Text</h3>\r\n   <textarea class=\"text\">"
+  return "<div class=\"blank\">\r\n   <div class=\"deleteMe\">Delete</div>\r\n   <h3>Question Text</h3>\r\n   <textarea class=\"text\">"
     + alias4(((helper = (helper = helpers.text || (depth0 != null ? depth0.text : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"text","hash":{},"data":data}) : helper)))
     + "</textarea>\r\n\r\n   <h3>List of answers for blank</h3>\r\n   <textarea class=\"answers\">"
     + alias4((helpers.jsonString || (depth0 && depth0.jsonString) || alias2).call(alias1,(depth0 != null ? depth0.answers : depth0),{"name":"jsonString","hash":{},"data":data}))
@@ -11,7 +11,7 @@ templates['blanksUI'] = template({"1":function(container,depth0,helpers,partials
     + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.isRegEx : depth0),{"name":"if","hash":{},"fn":container.program(2, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "> Convert number answers to regular expressions\r\n   </lable>\r\n\r\n   <h3>Tolerance</h3>\r\n   <input type=\"text\" class=\"tolerance\" value=\""
     + alias4(((helper = (helper = helpers.tolerance || (depth0 != null ? depth0.tolerance : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"tolerance","hash":{},"data":data}) : helper)))
-    + "\">\r\n\r\n   <h3>Place value behind the decimal to round to</h3>\r\n   <select class=\"numOfDigits\">\r\n      <option value=\"0\" selected>0 Decimal</option>\r\n      <option value=\"1\">0.1</option>\r\n      <option value=\"2\">0.01</option>\r\n      <option value=\"3\">0.001</option>\r\n      <option value=\"4\">0.0001</option>\r\n      <option value=\"5\">0.00001</option>\r\n      <option value=\"6\">0.000001</option>\r\n      <option value=\"7\">0.0000001</option>\r\n   </select>\r\n</div>\r\n";
+    + "\">\r\n\r\n   <h3>Place value behind the decimal to round to</h3>\r\n   <select class=\"numOfDigits\">\r\n      <option value=\"0\" selected>0 Decimal</option>\r\n      <option value=\"1\">1</option>\r\n      <option value=\"2\">10</option>\r\n      <option value=\"3\">100</option>\r\n      <option value=\"4\">1000</option>\r\n      <option value=\"5\">10000</option>\r\n      <option value=\"6\">100000</option>\r\n      <option value=\"7\">1000000</option>\r\n   </select>\r\n</div>\r\n";
 },"2":function(container,depth0,helpers,partials,data) {
     return "checked";
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {

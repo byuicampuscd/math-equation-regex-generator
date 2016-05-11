@@ -15,7 +15,8 @@
       "test": "tape tests/*.js | tap-diff",
       "testNoColor": "tape tests/*.js",
       "makeBrowser": "browserify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js",
-      "server": "live-server --port=9001"
+      "server": "live-server --port=9001",
+      "start": "watchify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js -v"
    },
    "author": "Joshua McKinney",
    "license": "UNLICENCED"

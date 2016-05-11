@@ -14,7 +14,8 @@ h6,
 label,
 textarea,
 input,
-button {
+button,
+.deleteMe{
    font-family: Helvetica, "Century Gothic", Arial, sans-serif;
    font-weight: 100;
 }
@@ -39,7 +40,7 @@ body {
 /*Strip appearance*/
 label,
 textarea,
-input,
+input:not([type='checkbox']),
 button {
    -webkit-appearance: none;
    -moz-appearance: none;
@@ -48,7 +49,8 @@ button {
 
 label,
 textarea,
-input {
+input[type="text"],
+input[type="number"]{
    display: block;
    margin: 15px 0px;
    border: 1px solid #dddddd;
@@ -58,9 +60,14 @@ input {
    width: 300px;
 }
 
-textarea {
-   height: 150px;
-   width: 300px;
+#csvIn {
+   height: 300px;
+   width: 800px;
+}
+
+#variablesUI {
+   height: 100px;
+   width: 400px;
    resize: none;
 }
 
@@ -85,4 +92,16 @@ button:active {
    margin: 10px;
    border: 1px solid #888;
    border-radius: 5px;
+}
+
+.blank:nth-child(odd) {
+   background-color: #e8e8e8;
+}
+
+.deleteMe {
+   border: #006bb3 2px solid;
+   color: #ececec;
+   background-color: #0074c2;
+   cursor: pointer;
+   width: 50px;
 }

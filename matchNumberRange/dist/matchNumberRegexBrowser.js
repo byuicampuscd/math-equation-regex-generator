@@ -4,44 +4,37 @@
 "use strict";
 
 module.exports = (function () {
-   function round(number, numOfDigits, makeTextOn) {
-      var textOut;
-
-      //round to text
-
-      textOut = number.toFixed(numOfDigits);
-
-      //return as number or text
-      if (makeTextOn) {
-         return textOut;
-      } else {
-         return Number(textOut);
-      }
-   }
-
-   function makeBounds(lower, upper, numOfDigits) {
-      return {
-         lower: round(lower, numOfDigits, false),
-         upper: round(upper, numOfDigits, false)
-      };
-   }
-
-   function makeBoundsFromTol(answer, tolerance, numOfDigits) {
-      var lower, upper, tol;
-      if (typeof tolerance === 'string' && tolerance.trim().charAt(tolerance.length - 1) === '%') {
-         //if it is a percent
-         tol = parseFloat(tolerance) / 100 * answer;
-      } else {
-         //if is just a number
-         tol = tolerance;
+   function numberToString(number, numOfDigits) {
+      function repeat(char, length) {
+         var i, strOut = '';
+         for (i = 0; i < length; ++i) {
+            strOut += char;
+         }
+         return strOut;
       }
 
-      //get base Bounds
-      return makeBounds(answer - tol, answer + tol, numOfDigits);
-   }
+      var numText, sign;
 
-   function makeStep(numOfDigits) {
-      return 1 / Math.pow(10, numOfDigits);
+      //get the sign and then kill it
+      sign = 1 / number > 0 ? '' : '-';
+      number = Math.abs(number);
+
+      //now make text
+      numText = number.toFixed(0);
+
+      //left or right of decimal
+      if (numOfDigits < 0) {
+         //is the point in the number or not 
+         if (Math.abs(numOfDigits) >= numText.length) {
+            return sign + '0?.' + repeat('0', Math.abs(numOfDigits) - numText.length) + numText;
+         } else {
+            //the point is in the number
+            //numOfDigits is negitive so
+            return sign + numText.substr(0, numText.length + numOfDigits) + '.' + numText.substr(numOfDigits);
+         }
+      } else {
+         return sign + numText + repeat('d', numOfDigits);
+      }
    }
 
    function makeList(bounds, numOfDigits) {
@@ -57,37 +50,30 @@ module.exports = (function () {
          return index;
       }
 
-      var step, i,
-         possibleNumbers = [],
-         numToAdd = bounds.lower;
-      step = makeStep(numOfDigits);
-
-      //make the list
-      for (i = 0; numToAdd <= bounds.upper; i += 1) {
-         possibleNumbers.push(numToAdd);
-         //this is for floating point math, to fix the 0 not being 0 problem
-         numToAdd = bounds.lower + (i * step);
-      }
+      var i,
+         possibleNumbers = [];
 
       //make text counter parts
-      possibleNumbers = possibleNumbers.map(function (item) {
-         var itemText = round(item, numOfDigits, true);
-         return {
-            num: item,
-            text: itemText,
-            decPointIndex: itemText.indexOf('.')
-         };
-      });
+      for (i = bounds.lower; i <= bounds.upper; ++i) {
+         //This makes sure that -0 gets added to the list when for numbers like -0.0\d*
+         if (i === 0 && bounds.lower < 0 && bounds.upper >= 0) {
+            possibleNumbers.push({
+               num: -0,
+               text: numberToString(-0, numOfDigits)
+            });
+         }
 
-      //make sure only has unique numbers
-      possibleNumbers = possibleNumbers.filter(function (item, count) {
-         return itemIndexFromEnd(possibleNumbers, item) === count;
-      });
+         possibleNumbers.push({
+            num: i,
+            text: numberToString(i, numOfDigits)
+         });
+
+      }
 
       return possibleNumbers;
    }
 
-   function simpleCuts(possibleNumbers, listOfLists) {
+   function makeCuts(possibleNumbers) {
       function cutNow(item, nextItem) {
 
          //at end of array
@@ -100,26 +86,19 @@ module.exports = (function () {
             return true;
          }
 
-         //cut at decimal moves
-         if (item.decPointIndex !== nextItem.decPointIndex) {
-            return true;
-         }
-
-         //cut at from negitives to non negitive -- im pretty sure length above handles this
-         if (item.num < 0 && nextItem.num >= 0) {
-            return true;
-         }
-
          return false;
       }
       var lastCut = 0,
+         listOfLists = [],
          i;
+
       for (i = 0; i < possibleNumbers.length; ++i) {
          if (cutNow(possibleNumbers[i], possibleNumbers[i + 1])) {
             listOfLists.push(possibleNumbers.slice(lastCut, i + 1));
             lastCut = i + 1;
          }
       }
+      return listOfLists;
    }
 
    function trieFromList(list) {
@@ -130,18 +109,11 @@ module.exports = (function () {
       list.forEach(function (item, count) {
          trie.add(item.text);
       });
-      return trie;
+
+      return trie.toObject();
    }
 
-   function debugData(data) {
-      //print possibleNumbers
-      console.log('************ DEBUG ************');
-      console.log(data.possibleNumbers.map(function (item) {
-         return item.text;
-      }));
-      console.log('************ END DEBUG ************');
-   }
-
+   // addEnd is used to attach the ending to allow for extra digits past required presicion 
    function addEnd(text) {
       var reg = '';
       if (text.indexOf('.') !== -1) {
@@ -153,59 +125,138 @@ module.exports = (function () {
 
    }
 
+   function process(bounds, numOfDigits) {
+      var possibleNumbers,
+         possiblesCutUp,
+         listOfRegEx = [],
+         trieToRegEx = require('./trieToRegEx.js'),
+         regExOut;
+
+      //make the list
+      possibleNumbers = makeList(bounds, numOfDigits);
+
+      //cut it up in to legal lists 
+      possiblesCutUp = makeCuts(possibleNumbers);
+
+      //regexs from lists
+      possiblesCutUp.forEach(function (list) {
+         listOfRegEx.push(trieToRegEx(trieFromList(list)));
+      });
+
+      regExOut = '(?:' + listOfRegEx.join('|') + ')';
+      // addEnd is used to attach the ending to allow for extra digits past required presicion 
+      regExOut = addEnd(regExOut);
+      return '^\\s*' + regExOut + '$';
+   }
+
+   function scale(number, numOfDigits) {
+      function trunc(number) {
+         if (number < 0) {
+            return Math.ceil(number);
+         }
+         return Math.floor(number);
+      }
+
+      if (numOfDigits < 0) {
+         //scale up
+         number = number * Math.pow(10, Math.abs(numOfDigits));
+      } else {
+         //scale down
+         if (number.toFixed(0).length <= numOfDigits) {
+            throw "numOfDigits is too high. number: " + number + " numOfDigits: " + numOfDigits;
+         }
+         number = number / Math.pow(10, numOfDigits);
+      }
+
+      //chop the decmal part
+      return trunc(number);
+   }
+
+   function scaleBounds(bounds, numOfDigits) {
+
+      function scale(number, numOfDigits) {
+         if (numOfDigits < 0) {
+            //scale up
+            number = number * Math.pow(10, Math.abs(numOfDigits));
+         } else {
+            //scale down
+            console.log(number);
+            if (number.toFixed(0).length <= numOfDigits) {
+               throw "numOfDigits is too high. number: " + number + " numOfDigits: " + numOfDigits;
+            }
+            number = number / Math.pow(10, numOfDigits);
+         }
+         return number;
+      }
+
+      //scale the numbers
+      bounds.upper = scale(bounds.upper, numOfDigits);
+      bounds.lower = scale(bounds.lower, numOfDigits);
+   }
+
+   function makeBounds(lower, upper, numOfDigits) {
+      var bounds;
+
+      //make sure they are in the correct order
+      if (lower <= upper) {
+         bounds = {
+            lower: lower,
+            upper: upper
+         };
+      } else {
+         bounds = {
+            lower: upper,
+            upper: lower
+         };
+      }
+
+      scaleBounds(bounds, numOfDigits);
+
+      //round by expanding
+      bounds = {
+         lower: Math.floor(bounds.lower),
+         upper: Math.ceil(bounds.upper)
+      };
+
+      bounds.diff = bounds.upper - bounds.lower;
+
+      return bounds;
+   }
+
+   function makeBoundsFromTol(answer, tolerance, numOfDigits) {
+      var lower, 
+          upper, 
+          tol;     
+         
+      if (typeof tolerance === 'string' && tolerance.trim().charAt(tolerance.length - 1) === '%') {
+         //if it is a percent
+         tol = parseFloat(tolerance) / 100 * answer;
+         
+      } else if (typeof tolerance === 'number' && !isNaN(tolerance)) {
+         //if is just a number
+         tol = tolerance;
+         console.log("ya");
+      } else {
+         console.log("Error:", typeof tolerance, answer);
+         throw "Invalid tolerance";
+      }
+
+      //get base Bounds
+      return makeBounds(answer - tol, answer + tol, numOfDigits);
+   }
+
    function fromTolerance(answer, tolerance, numOfDigits) {
       var bounds = makeBoundsFromTol(answer, tolerance, numOfDigits);
+      //console.log("bounds:", bounds);
+      //console.log("bounds diff:", bounds.upper - bounds.lower);
       return process(bounds, numOfDigits);
    }
 
    function fromBounds(lower, upper, numOfDigits) {
-      var bounds,
-         tempBound;
-
-      //make sure they are in the correct order
-      if (lower > upper) {
-         tempBound = lower;
-         lower = upper;
-         upper = tempBound;
-      }
-
-      bounds = makeBounds(lower, upper, numOfDigits);
+      var bounds = makeBounds(lower, upper, numOfDigits);
+      //console.log("bounds:", bounds);
+      //console.log("bounds diff:", bounds.upper - bounds.lower);
       return process(bounds, numOfDigits);
-   }
-
-   function process(bounds, numOfDigits) {
-      var possibleNumbers,
-         listOfLists = [],
-         listOfRegEx = [],
-         listOfTries = [],
-         trieToRegEx = require('./trieToRegEx.js'),
-         data,
-         regExOut;
-      possibleNumbers = makeList(bounds, numOfDigits);
-
-      //cut it up
-      simpleCuts(possibleNumbers, listOfLists);
-
-      //regexs from lists
-      listOfLists.forEach(function (list) {
-         var trie = trieFromList(list).toObject();
-         listOfTries.push(trie);
-         listOfRegEx.push(trieToRegEx(trie));
-         //FIX when you don't need check your lists any more
-         //listOfRegEx.push(trieToRegEx(trieFromList(list).toObject()));
-      });
-
-      //FIX when you don't need check your lists any more
-      data = {
-         possibleNumbers: possibleNumbers,
-         listOfLists: listOfLists,
-         listOfTries: listOfTries,
-         listOfRegEx: listOfRegEx
-      };
-      //debugData(data);
-      regExOut = '(?:' + listOfRegEx.join('|') + ')';
-      regExOut = addEnd(regExOut);
-      return '^\\s*' + regExOut + '$';
    }
 
    return {
@@ -214,481 +265,7 @@ module.exports = (function () {
    };
 
 }());
-},{"./trieToRegEx.js":20,"trie-hard":9}],1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
-(function (process){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-  for (var i = parts.length - 1; i >= 0; i--) {
-    var last = parts[i];
-    if (last === '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  }
-
-  // if the path is allowed to go above the root, restore leading ..s
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-}
-
-// Split a filename into [root, dir, basename, ext], unix version
-// 'root' is just a slash, or nothing.
-var splitPathRe =
-    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-var splitPath = function(filename) {
-  return splitPathRe.exec(filename).slice(1);
-};
-
-// path.resolve([from ...], to)
-// posix version
-exports.resolve = function() {
-  var resolvedPath = '',
-      resolvedAbsolute = false;
-
-  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    var path = (i >= 0) ? arguments[i] : process.cwd();
-
-    // Skip empty and invalid entries
-    if (typeof path !== 'string') {
-      throw new TypeError('Arguments to path.resolve must be strings');
-    } else if (!path) {
-      continue;
-    }
-
-    resolvedPath = path + '/' + resolvedPath;
-    resolvedAbsolute = path.charAt(0) === '/';
-  }
-
-  // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-  // Normalize the path
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-
-  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
-};
-
-// path.normalize(path)
-// posix version
-exports.normalize = function(path) {
-  var isAbsolute = exports.isAbsolute(path),
-      trailingSlash = substr(path, -1) === '/';
-
-  // Normalize the path
-  path = normalizeArray(filter(path.split('/'), function(p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-  if (path && trailingSlash) {
-    path += '/';
-  }
-
-  return (isAbsolute ? '/' : '') + path;
-};
-
-// posix version
-exports.isAbsolute = function(path) {
-  return path.charAt(0) === '/';
-};
-
-// posix version
-exports.join = function() {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
-    if (typeof p !== 'string') {
-      throw new TypeError('Arguments to path.join must be strings');
-    }
-    return p;
-  }).join('/'));
-};
-
-
-// path.relative(from, to)
-// posix version
-exports.relative = function(from, to) {
-  from = exports.resolve(from).substr(1);
-  to = exports.resolve(to).substr(1);
-
-  function trim(arr) {
-    var start = 0;
-    for (; start < arr.length; start++) {
-      if (arr[start] !== '') break;
-    }
-
-    var end = arr.length - 1;
-    for (; end >= 0; end--) {
-      if (arr[end] !== '') break;
-    }
-
-    if (start > end) return [];
-    return arr.slice(start, end - start + 1);
-  }
-
-  var fromParts = trim(from.split('/'));
-  var toParts = trim(to.split('/'));
-
-  var length = Math.min(fromParts.length, toParts.length);
-  var samePartsLength = length;
-  for (var i = 0; i < length; i++) {
-    if (fromParts[i] !== toParts[i]) {
-      samePartsLength = i;
-      break;
-    }
-  }
-
-  var outputParts = [];
-  for (var i = samePartsLength; i < fromParts.length; i++) {
-    outputParts.push('..');
-  }
-
-  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-  return outputParts.join('/');
-};
-
-exports.sep = '/';
-exports.delimiter = ':';
-
-exports.dirname = function(path) {
-  var result = splitPath(path),
-      root = result[0],
-      dir = result[1];
-
-  if (!root && !dir) {
-    // No dirname whatsoever
-    return '.';
-  }
-
-  if (dir) {
-    // It has a dirname, strip trailing slash
-    dir = dir.substr(0, dir.length - 1);
-  }
-
-  return root + dir;
-};
-
-
-exports.basename = function(path, ext) {
-  var f = splitPath(path)[2];
-  // TODO: make this comparison case-insensitive on windows?
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-  return f;
-};
-
-
-exports.extname = function(path) {
-  return splitPath(path)[3];
-};
-
-function filter (xs, f) {
-    if (xs.filter) return xs.filter(f);
-    var res = [];
-    for (var i = 0; i < xs.length; i++) {
-        if (f(xs[i], i, xs)) res.push(xs[i]);
-    }
-    return res;
-}
-
-// String.prototype.substr - negative index don't work in IE8
-var substr = 'ab'.substr(-1) === 'b'
-    ? function (str, start, len) { return str.substr(start, len) }
-    : function (str, start, len) {
-        if (start < 0) start = str.length + start;
-        return str.substr(start, len);
-    }
-;
-
-}).call(this,require('_process'))
-},{"_process":3}],3:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],4:[function(require,module,exports){
-var indexOf = require('indexof');
-
-var Object_keys = function (obj) {
-    if (Object.keys) return Object.keys(obj)
-    else {
-        var res = [];
-        for (var key in obj) res.push(key)
-        return res;
-    }
-};
-
-var forEach = function (xs, fn) {
-    if (xs.forEach) return xs.forEach(fn)
-    else for (var i = 0; i < xs.length; i++) {
-        fn(xs[i], i, xs);
-    }
-};
-
-var defineProp = (function() {
-    try {
-        Object.defineProperty({}, '_', {});
-        return function(obj, name, value) {
-            Object.defineProperty(obj, name, {
-                writable: true,
-                enumerable: false,
-                configurable: true,
-                value: value
-            })
-        };
-    } catch(e) {
-        return function(obj, name, value) {
-            obj[name] = value;
-        };
-    }
-}());
-
-var globals = ['Array', 'Boolean', 'Date', 'Error', 'EvalError', 'Function',
-'Infinity', 'JSON', 'Math', 'NaN', 'Number', 'Object', 'RangeError',
-'ReferenceError', 'RegExp', 'String', 'SyntaxError', 'TypeError', 'URIError',
-'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape',
-'eval', 'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'undefined', 'unescape'];
-
-function Context() {}
-Context.prototype = {};
-
-var Script = exports.Script = function NodeScript (code) {
-    if (!(this instanceof Script)) return new Script(code);
-    this.code = code;
-};
-
-Script.prototype.runInContext = function (context) {
-    if (!(context instanceof Context)) {
-        throw new TypeError("needs a 'context' argument.");
-    }
-    
-    var iframe = document.createElement('iframe');
-    if (!iframe.style) iframe.style = {};
-    iframe.style.display = 'none';
-    
-    document.body.appendChild(iframe);
-    
-    var win = iframe.contentWindow;
-    var wEval = win.eval, wExecScript = win.execScript;
-
-    if (!wEval && wExecScript) {
-        // win.eval() magically appears when this is called in IE:
-        wExecScript.call(win, 'null');
-        wEval = win.eval;
-    }
-    
-    forEach(Object_keys(context), function (key) {
-        win[key] = context[key];
-    });
-    forEach(globals, function (key) {
-        if (context[key]) {
-            win[key] = context[key];
-        }
-    });
-    
-    var winKeys = Object_keys(win);
-
-    var res = wEval.call(win, this.code);
-    
-    forEach(Object_keys(win), function (key) {
-        // Avoid copying circular objects like `top` and `window` by only
-        // updating existing context properties or new properties in the `win`
-        // that was only introduced after the eval.
-        if (key in context || indexOf(winKeys, key) === -1) {
-            context[key] = win[key];
-        }
-    });
-
-    forEach(globals, function (key) {
-        if (!(key in context)) {
-            defineProp(context, key, win[key]);
-        }
-    });
-    
-    document.body.removeChild(iframe);
-    
-    return res;
-};
-
-Script.prototype.runInThisContext = function () {
-    return eval(this.code); // maybe...
-};
-
-Script.prototype.runInNewContext = function (context) {
-    var ctx = Script.createContext(context);
-    var res = this.runInContext(ctx);
-
-    forEach(Object_keys(ctx), function (key) {
-        context[key] = ctx[key];
-    });
-
-    return res;
-};
-
-forEach(Object_keys(Script.prototype), function (name) {
-    exports[name] = Script[name] = function (code) {
-        var s = Script(code);
-        return s[name].apply(s, [].slice.call(arguments, 1));
-    };
-});
-
-exports.createScript = function (code) {
-    return exports.Script(code);
-};
-
-exports.createContext = Script.createContext = function (context) {
-    var copy = new Context();
-    if(typeof context === 'object') {
-        forEach(Object_keys(context), function (key) {
-            copy[key] = context[key];
-        });
-    }
-    return copy;
-};
-
-},{"indexof":5}],5:[function(require,module,exports){
-
-var indexOf = [].indexOf;
-
-module.exports = function(arr, obj){
-  if (indexOf) return arr.indexOf(obj);
-  for (var i = 0; i < arr.length; ++i) {
-    if (arr[i] === obj) return i;
-  }
-  return -1;
-};
-},{}],6:[function(require,module,exports){
+},{"./trieToRegEx.js":15,"trie-hard":4}],1:[function(require,module,exports){
 var pSlice = Array.prototype.slice;
 var objectKeys = require('./lib/keys.js');
 var isArguments = require('./lib/is_arguments.js');
@@ -784,7 +361,7 @@ function objEquiv(a, b, opts) {
   return typeof a === typeof b;
 }
 
-},{"./lib/is_arguments.js":7,"./lib/keys.js":8}],7:[function(require,module,exports){
+},{"./lib/is_arguments.js":2,"./lib/keys.js":3}],2:[function(require,module,exports){
 var supportsArgumentsClass = (function(){
   return Object.prototype.toString.call(arguments)
 })() == '[object Arguments]';
@@ -806,7 +383,7 @@ function unsupported(object){
     false;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 exports = module.exports = typeof Object.keys === 'function'
   ? Object.keys : shim;
 
@@ -817,11 +394,11 @@ function shim (obj) {
   return keys;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 require('coffee-script');
 module.exports = require('./lib/trie');
 
-},{"./lib/trie":11,"coffee-script":12}],10:[function(require,module,exports){
+},{"./lib/trie":6,"coffee-script":7}],5:[function(require,module,exports){
 var Match,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -856,7 +433,7 @@ module.exports = Match = (function() {
 })();
 
 
-},{}],11:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var Match, Trie,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   slice = [].slice;
@@ -957,7 +534,7 @@ module.exports = Trie = (function() {
 })();
 
 
-},{"./match":10}],12:[function(require,module,exports){
+},{"./match":5}],7:[function(require,module,exports){
 (function (process,global){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -1319,7 +896,7 @@ module.exports = Trie = (function() {
 }).call(this);
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers":13,"./lexer":14,"./nodes":15,"./parser":16,"./sourcemap":19,"_process":3,"child_process":1,"fs":1,"module":1,"path":2,"vm":4}],13:[function(require,module,exports){
+},{"./helpers":8,"./lexer":9,"./nodes":10,"./parser":11,"./sourcemap":14,"_process":18,"child_process":16,"fs":16,"module":16,"path":17,"vm":19}],8:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.3
 (function() {
   var buildLocationData, extend, flatten, last, repeat, _ref;
@@ -1544,7 +1121,7 @@ module.exports = Trie = (function() {
 
 }).call(this);
 
-},{}],14:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.3
 (function() {
   var BOM, BOOL, CALLABLE, CODE, COFFEE_ALIASES, COFFEE_ALIAS_MAP, COFFEE_KEYWORDS, COMMENT, COMPARE, COMPOUND_ASSIGN, HEREDOC, HEREDOC_ILLEGAL, HEREDOC_INDENT, HEREGEX, HEREGEX_OMIT, IDENTIFIER, INDEXABLE, INVERSES, JSTOKEN, JS_FORBIDDEN, JS_KEYWORDS, LINE_BREAK, LINE_CONTINUER, LOGIC, Lexer, MATH, MULTILINER, MULTI_DENT, NOT_REGEX, NOT_SPACED_REGEX, NUMBER, OPERATOR, REGEX, RELATION, RESERVED, Rewriter, SHIFT, SIMPLESTR, STRICT_PROSCRIBED, TRAILING_SPACES, UNARY, WHITESPACE, compact, count, invertLiterate, key, last, locationDataToString, repeat, starts, throwSyntaxError, _ref, _ref1,
@@ -2435,7 +2012,7 @@ module.exports = Trie = (function() {
 
 }).call(this);
 
-},{"./helpers":13,"./rewriter":17}],15:[function(require,module,exports){
+},{"./helpers":8,"./rewriter":12}],10:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.3
 (function() {
   var Access, Arr, Assign, Base, Block, Call, Class, Closure, Code, CodeFragment, Comment, Existence, Extends, For, IDENTIFIER, IDENTIFIER_STR, IS_STRING, If, In, Index, LEVEL_ACCESS, LEVEL_COND, LEVEL_LIST, LEVEL_OP, LEVEL_PAREN, LEVEL_TOP, Literal, METHOD_DEF, NEGATE, NO, Obj, Op, Param, Parens, RESERVED, Range, Return, SIMPLENUM, STRICT_PROSCRIBED, Scope, Slice, Splat, Switch, TAB, THIS, Throw, Try, UTILITIES, Value, While, YES, addLocationDataFn, compact, del, ends, extend, flatten, fragmentsToText, last, locationDataToString, merge, multident, some, starts, throwSyntaxError, unfoldSoak, utility, _ref, _ref1, _ref2, _ref3,
@@ -5485,7 +5062,7 @@ module.exports = Trie = (function() {
 
 }).call(this);
 
-},{"./helpers":13,"./lexer":14,"./scope":18}],16:[function(require,module,exports){
+},{"./helpers":8,"./lexer":9,"./scope":13}],11:[function(require,module,exports){
 (function (process){
 /* parser generated by jison 0.4.2 */
 var parser = (function(){
@@ -6098,7 +5675,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 }
 }
 }).call(this,require('_process'))
-},{"_process":3,"fs":1,"path":2}],17:[function(require,module,exports){
+},{"_process":18,"fs":16,"path":17}],12:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.3
 (function() {
   var BALANCED_PAIRS, EXPRESSION_CLOSE, EXPRESSION_END, EXPRESSION_START, IMPLICIT_CALL, IMPLICIT_END, IMPLICIT_FUNC, IMPLICIT_UNSPACED_CALL, INVERSES, LINEBREAKS, SINGLE_CLOSERS, SINGLE_LINERS, generate, left, rite, _i, _len, _ref,
@@ -6585,7 +6162,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
 }).call(this);
 
-},{}],18:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.3
 (function() {
   var Scope, extend, last, _ref;
@@ -6733,7 +6310,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
 }).call(this);
 
-},{"./helpers":13}],19:[function(require,module,exports){
+},{"./helpers":8}],14:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.3
 (function() {
   var LineMap, SourceMap;
@@ -6896,206 +6473,693 @@ if (typeof module !== 'undefined' && require.main === module) {
 
 }).call(this);
 
-},{}],20:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /*jslint plusplus: true, node:true */
 "use strict";
 
 module.exports = (function () {
-	function getKeys(obj) {
-		return Object.keys(obj).sort();
-	}
+   function getKeys(obj) {
+      return Object.keys(obj).sort();
+   }
 
-	//this groups nodes at the same level that have the same kids
-	function combindEquals(converted) {
-		var outerI, innerI, deepEq = require('deep-Equal');
+   //this groups the nodes at the same level that have the same kids
+   function combindEquals(converted) {
+      var outerI, innerI, deepEq = require('deep-Equal');
 
-		for (outerI = 0; outerI < converted.length; ++outerI) {
-			if (!converted[outerI].deleteMe) {
-				for (innerI = outerI + 1; innerI < converted.length; ++innerI) {
-					if (!converted[innerI].deleteMe) {
-						//if they have the same kids then just hold on to the char
-						if (deepEq(converted[outerI].kids, converted[innerI].kids)) {
-							converted[outerI].chars = converted[outerI].chars.concat(converted[innerI].chars);
-							converted[innerI].deleteMe = true;
-						}
-					}
-				}
-			}
-		}
+      for (outerI = 0; outerI < converted.length; ++outerI) {
+         if (!converted[outerI].deleteMe) {
+            for (innerI = outerI + 1; innerI < converted.length; ++innerI) {
+               if (!converted[innerI].deleteMe) {
+                  //if they have the same kids then just hold on to the char
+                  if (deepEq(converted[outerI].kids, converted[innerI].kids)) {
+                     converted[outerI].chars = converted[outerI].chars.concat(converted[innerI].chars);
+                     converted[innerI].deleteMe = true;
+                  }
+               }
+            }
+         }
+      }
 
-		//take out the deleted ones
-		converted = converted.filter(function (item, count) {
-			return item.deleteMe !== true;
-		});
+      //take out the deleted ones
+      converted = converted.filter(function (item, count) {
+         return item.deleteMe !== true;
+      });
 
-		//loop the kids
-		converted.forEach(function (item) {
-			if (item.kids) {
-				item.kids = combindEquals(item.kids);
-			}
-		});
+      //loop the kids
+      converted.forEach(function (item) {
+         if (item.kids) {
+            item.kids = combindEquals(item.kids);
+         }
+      });
 
-		return converted;
+      return converted;
 
-	}
+   }
 
-	//this converts the trie in to a trie that uses arrays instead of objs
-	function convert(trie) {
-		var keys = getKeys(trie);
-		return keys.map(function (key) {
-			var objOut = {
-				chars: [key]
-			};
+   //this converts the trie in to a trie that uses arrays instead of objs
+   function convert(trie) {
+      var keys = getKeys(trie);
+      return keys.map(function (key) {
+         var objOut = {
+            chars: [key]
+         };
 
-			if (trie[key] === 1) {
-				return objOut;
-			} else if (typeof trie[key] === 'object') {
-				objOut.kids = convert(trie[key]);
-				return objOut;
-			}
-			//just incase to see error
-			return 'error';
+         if (trie[key] === 1) {
+            return objOut;
+         } else if (typeof trie[key] === 'object') {
+            objOut.kids = convert(trie[key]);
+            return objOut;
+         }
+         //just incase to see error
+         return 'error';
 
-		});
-	}
+      });
+   }
 
-	//check if a char is on the naughty list and escape it
-	function excape(char, isInCharSet) {
-		var badAlways = ['.'],
-			badInCharSet = ['-'],
-			excapeChar = '';
-		//badInCharSet needs to have all
-		badInCharSet = badInCharSet.concat(badAlways);
+   //check if a char is on the naughty list and escape it
+   function excape(char, isInCharSet) {
+      var badAlways = ['.', 'd'],
+         badInCharSet = ['-'],
+         excapeChar = '';
+      //badInCharSet needs to have all
+      badInCharSet = badInCharSet.concat(badAlways);
 
-		//check if they are on the naughty list
-		if (isInCharSet && badInCharSet.indexOf(char) !== -1) {
-			excapeChar = '\\';
-		} else if (!isInCharSet && badAlways.indexOf(char) !== -1) {
-			excapeChar = '\\';
-		}
+      //check if they are on the naughty list
+      if (isInCharSet && badInCharSet.indexOf(char) !== -1) {
+         excapeChar = '\\';
+      } else if (!isInCharSet && badAlways.indexOf(char) !== -1) {
+         excapeChar = '\\';
+      }
 
-		return excapeChar + char;
-	}
+      return excapeChar + char;
+   }
 
-	function justNumsToCharSet(justNums) {
-		function toText(arr) {
-			if (arr.length > 2) {
-				return arr[0] + '-' + justNums[arr.length - 1];
-			} else {
-				return arr.join('');
-			}
-		}
+   function justNumsToCharSet(justNums) {
+      function toText(arr) {
+         if (arr.length > 2) {
+            return arr[0] + '-' + arr[arr.length - 1];
+         } else {
+            return arr.join('');
+         }
+      }
 
-		//to check if we have no missing first is almost the same as if we just guarantee it
-		var lastIndex = justNums.length - 1,
-			groupsOfNoMissing = [],
-			lastCut = 0,
-			textOut = '';
+      //to check if we have no missing first is almost the same as if we just guarantee it
+      var lastIndex = justNums.length - 1,
+         groupsOfNoMissing = [],
+         lastCut = 0,
+         textOut = '';
 
-		//if array is short there can't be any missing, return
-		if (lastIndex < 2) {
-			return toText(justNums);
-		}
+      //if array is short there can't be any missing, return
+      if (lastIndex < 2) {
+         return toText(justNums);
+      }
 
-		//make groups of no missing
-		justNums.forEach(function (item, count) {
-			//cut at missing
-			if (count === lastIndex || Number(item) + 1 !== Number(justNums[count + 1])) {
-				groupsOfNoMissing.push(justNums.slice(lastCut, count + 1));
-				lastCut = count + 1;
-			}
+      //make groups of no missing
+      justNums.forEach(function (item, count) {
+         //cut at missing
+         if (count === lastIndex || Number(item) + 1 !== Number(justNums[count + 1])) {
+            groupsOfNoMissing.push(justNums.slice(lastCut, count + 1));
+            lastCut = count + 1;
+         }
 
-		});
+      });
 
-		//make the text from the list
-		groupsOfNoMissing.forEach(function (group) {
-			if (group.length > 1) {
-				textOut += toText(group);
-			}
-		});
+      //make the text from the list
+      groupsOfNoMissing.forEach(function (group) {
+         if (group.length > 1) {
+            textOut += toText(group);
+         } else {
+            textOut += group.toString();
+         }
+      });
 
-		return textOut;
-	}
+      return textOut;
+   }
 
-	//makes regular expresions that look like [0-9]
-	function makeCharSet(list) {
-		var justNums, notNums,
-			textOut = '',
-			inCharSet = list.length > 1;
-		justNums = list.filter(function (item) {
-			return item.match(/\d/) !== null;
-		});
+   //makes regular expresions that look like [0-6] or \d or the negitive sign or the decimal point 
+   function makeCharSet(list) {
+      function numEqIndex(num, index) {
+         return +num === index;
+      }
 
-		notNums = list.filter(function (item) {
-			return item.match(/\d/) === null;
-		});
+      var justNums, notNums,
+         textOut = '',
+         inCharSet = list.length > 1;
 
-		//add on numbers
-		textOut += justNumsToCharSet(justNums);
+      justNums = list.filter(function (item) {
+         return item.match(/\d/) !== null;
+      });
 
-		//put numbers on too
-		if (notNums.length > 0) {
-			notNums.forEach(function (item) {
-				textOut += excape(item, inCharSet);
-			});
-		}
-		if (inCharSet) {
-			return '[' + textOut + ']';
-		}
-		return textOut;
-	}
+      notNums = list.filter(function (item) {
+         return item.match(/\d/) === null;
+      });
+
+      //DO THE NUMBERS
+      //check if we have them all and output a \d instead
+      if (justNums.length === 10 && justNums.every(numEqIndex)) {
+         textOut += "\\d";
+         inCharSet = false;
+      } else {
+         textOut += justNumsToCharSet(justNums);
+      }
+
+      //put notNumbs too
+      if (notNums.length > 0) {
+         notNums.forEach(function (item) {
+            textOut += excape(item, inCharSet);
+         });
+      }
+      if (inCharSet) {
+         return '[' + textOut + ']';
+      }
+      return textOut;
+   }
+
+   function toRegEx(list) {
+      return list.map(function (item) {
+         var textOut = makeCharSet(item.chars),
+            kids;
+         if (item.kids) {
+            kids = toRegEx(item.kids);
+            if (kids.length > 1) {
+               textOut += '(?:' + toRegEx(item.kids).join('|') + ')';
+            } else {
+               textOut += kids[0];
+            }
+         }
+
+         return textOut;
+      });
+   }
+
+   function debug(trie, converted, pairedDown, regExList, regExOut) {
+
+      console.log('TRIE ------------------');
+      console.dir(trie);
+      console.log('Converted ------------------');
+      console.dir(converted, {
+         depth: null
+      });
+      console.log('pairedDown ------------------');
+      console.dir(pairedDown, {
+         depth: null
+      });
+      console.log('regExList ------------------');
+      console.log(regExList);
+      console.log('regExOut ------------------');
+      console.log(regExOut);
+      console.log('END ------------------');
+   }
+
+   return function (trie) {
+      var converted, pairedDown, regExList, regExOut;
+
+      converted = convert(trie);
+      pairedDown = combindEquals(converted);
+      regExList = toRegEx(pairedDown);
+
+      regExOut = regExList.join('|');
+
+      //debug(trie, converted, pairedDown, regExList, regExOut);
+      return regExOut;
+   };
+}());
+},{"deep-Equal":1}],16:[function(require,module,exports){
+
+},{}],17:[function(require,module,exports){
+(function (process){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes, empty elements, or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts, allowAboveRoot) {
+  // if the path tries to go above the root, `up` ends up > 0
+  var up = 0;
+  for (var i = parts.length - 1; i >= 0; i--) {
+    var last = parts[i];
+    if (last === '.') {
+      parts.splice(i, 1);
+    } else if (last === '..') {
+      parts.splice(i, 1);
+      up++;
+    } else if (up) {
+      parts.splice(i, 1);
+      up--;
+    }
+  }
+
+  // if the path is allowed to go above the root, restore leading ..s
+  if (allowAboveRoot) {
+    for (; up--; up) {
+      parts.unshift('..');
+    }
+  }
+
+  return parts;
+}
+
+// Split a filename into [root, dir, basename, ext], unix version
+// 'root' is just a slash, or nothing.
+var splitPathRe =
+    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+var splitPath = function(filename) {
+  return splitPathRe.exec(filename).slice(1);
+};
+
+// path.resolve([from ...], to)
+// posix version
+exports.resolve = function() {
+  var resolvedPath = '',
+      resolvedAbsolute = false;
+
+  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    var path = (i >= 0) ? arguments[i] : process.cwd();
+
+    // Skip empty and invalid entries
+    if (typeof path !== 'string') {
+      throw new TypeError('Arguments to path.resolve must be strings');
+    } else if (!path) {
+      continue;
+    }
+
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path.charAt(0) === '/';
+  }
+
+  // At this point the path should be resolved to a full absolute path, but
+  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+  // Normalize the path
+  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
+    return !!p;
+  }), !resolvedAbsolute).join('/');
+
+  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+};
+
+// path.normalize(path)
+// posix version
+exports.normalize = function(path) {
+  var isAbsolute = exports.isAbsolute(path),
+      trailingSlash = substr(path, -1) === '/';
+
+  // Normalize the path
+  path = normalizeArray(filter(path.split('/'), function(p) {
+    return !!p;
+  }), !isAbsolute).join('/');
+
+  if (!path && !isAbsolute) {
+    path = '.';
+  }
+  if (path && trailingSlash) {
+    path += '/';
+  }
+
+  return (isAbsolute ? '/' : '') + path;
+};
+
+// posix version
+exports.isAbsolute = function(path) {
+  return path.charAt(0) === '/';
+};
+
+// posix version
+exports.join = function() {
+  var paths = Array.prototype.slice.call(arguments, 0);
+  return exports.normalize(filter(paths, function(p, index) {
+    if (typeof p !== 'string') {
+      throw new TypeError('Arguments to path.join must be strings');
+    }
+    return p;
+  }).join('/'));
+};
 
 
-	function toRegEx(list) {
-		return list.map(function (item) {
-			var textOut = makeCharSet(item.chars),
-				kids;
-			if (item.kids) {
-				kids = toRegEx(item.kids);
-				if (kids.length > 1) {
-					textOut += '(?:' + toRegEx(item.kids).join('|') + ')';
-				} else {
-					textOut += kids[0];
-				}
-			}
-			// addEnd is used to attach the optional ending for extra digits past required presicion 
-			return textOut;
-		});
-	}
+// path.relative(from, to)
+// posix version
+exports.relative = function(from, to) {
+  from = exports.resolve(from).substr(1);
+  to = exports.resolve(to).substr(1);
 
-	function debug(trie, converted, pairedDown, regExList, regExOut) {
+  function trim(arr) {
+    var start = 0;
+    for (; start < arr.length; start++) {
+      if (arr[start] !== '') break;
+    }
 
-		console.log('TRIE ------------------');
-		console.dir(trie);
-		console.log('Converted ------------------');
-		console.dir(converted, {
-			depth: null
-		});
-		console.log('pairedDown ------------------');
-		console.dir(pairedDown, {
-			depth: null
-		});
-		console.log('regExList ------------------');
-		console.log(regExList);
-		console.log('regExOut ------------------');
-		console.log(regExOut);
-		console.log('END ------------------');
-	}
+    var end = arr.length - 1;
+    for (; end >= 0; end--) {
+      if (arr[end] !== '') break;
+    }
 
-	return function (trie) {
-		var converted, pairedDown, regExList, regExOut;
+    if (start > end) return [];
+    return arr.slice(start, end - start + 1);
+  }
 
-		converted = convert(trie);
-		pairedDown = combindEquals(converted);
-		regExList = toRegEx(pairedDown);
+  var fromParts = trim(from.split('/'));
+  var toParts = trim(to.split('/'));
 
-		regExOut = regExList.join('|');
+  var length = Math.min(fromParts.length, toParts.length);
+  var samePartsLength = length;
+  for (var i = 0; i < length; i++) {
+    if (fromParts[i] !== toParts[i]) {
+      samePartsLength = i;
+      break;
+    }
+  }
+
+  var outputParts = [];
+  for (var i = samePartsLength; i < fromParts.length; i++) {
+    outputParts.push('..');
+  }
+
+  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+  return outputParts.join('/');
+};
+
+exports.sep = '/';
+exports.delimiter = ':';
+
+exports.dirname = function(path) {
+  var result = splitPath(path),
+      root = result[0],
+      dir = result[1];
+
+  if (!root && !dir) {
+    // No dirname whatsoever
+    return '.';
+  }
+
+  if (dir) {
+    // It has a dirname, strip trailing slash
+    dir = dir.substr(0, dir.length - 1);
+  }
+
+  return root + dir;
+};
 
 
-		//debug(trie, converted, pairedDown, regExList, regExOut);
-		return regExOut;
-	};
+exports.basename = function(path, ext) {
+  var f = splitPath(path)[2];
+  // TODO: make this comparison case-insensitive on windows?
+  if (ext && f.substr(-1 * ext.length) === ext) {
+    f = f.substr(0, f.length - ext.length);
+  }
+  return f;
+};
+
+
+exports.extname = function(path) {
+  return splitPath(path)[3];
+};
+
+function filter (xs, f) {
+    if (xs.filter) return xs.filter(f);
+    var res = [];
+    for (var i = 0; i < xs.length; i++) {
+        if (f(xs[i], i, xs)) res.push(xs[i]);
+    }
+    return res;
+}
+
+// String.prototype.substr - negative index don't work in IE8
+var substr = 'ab'.substr(-1) === 'b'
+    ? function (str, start, len) { return str.substr(start, len) }
+    : function (str, start, len) {
+        if (start < 0) start = str.length + start;
+        return str.substr(start, len);
+    }
+;
+
+}).call(this,require('_process'))
+},{"_process":18}],18:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = setTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    clearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],19:[function(require,module,exports){
+var indexOf = require('indexof');
+
+var Object_keys = function (obj) {
+    if (Object.keys) return Object.keys(obj)
+    else {
+        var res = [];
+        for (var key in obj) res.push(key)
+        return res;
+    }
+};
+
+var forEach = function (xs, fn) {
+    if (xs.forEach) return xs.forEach(fn)
+    else for (var i = 0; i < xs.length; i++) {
+        fn(xs[i], i, xs);
+    }
+};
+
+var defineProp = (function() {
+    try {
+        Object.defineProperty({}, '_', {});
+        return function(obj, name, value) {
+            Object.defineProperty(obj, name, {
+                writable: true,
+                enumerable: false,
+                configurable: true,
+                value: value
+            })
+        };
+    } catch(e) {
+        return function(obj, name, value) {
+            obj[name] = value;
+        };
+    }
 }());
 
-},{"deep-Equal":6}]},{},[])("/matchNumberRangeRegex.js")
+var globals = ['Array', 'Boolean', 'Date', 'Error', 'EvalError', 'Function',
+'Infinity', 'JSON', 'Math', 'NaN', 'Number', 'Object', 'RangeError',
+'ReferenceError', 'RegExp', 'String', 'SyntaxError', 'TypeError', 'URIError',
+'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape',
+'eval', 'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'undefined', 'unescape'];
+
+function Context() {}
+Context.prototype = {};
+
+var Script = exports.Script = function NodeScript (code) {
+    if (!(this instanceof Script)) return new Script(code);
+    this.code = code;
+};
+
+Script.prototype.runInContext = function (context) {
+    if (!(context instanceof Context)) {
+        throw new TypeError("needs a 'context' argument.");
+    }
+    
+    var iframe = document.createElement('iframe');
+    if (!iframe.style) iframe.style = {};
+    iframe.style.display = 'none';
+    
+    document.body.appendChild(iframe);
+    
+    var win = iframe.contentWindow;
+    var wEval = win.eval, wExecScript = win.execScript;
+
+    if (!wEval && wExecScript) {
+        // win.eval() magically appears when this is called in IE:
+        wExecScript.call(win, 'null');
+        wEval = win.eval;
+    }
+    
+    forEach(Object_keys(context), function (key) {
+        win[key] = context[key];
+    });
+    forEach(globals, function (key) {
+        if (context[key]) {
+            win[key] = context[key];
+        }
+    });
+    
+    var winKeys = Object_keys(win);
+
+    var res = wEval.call(win, this.code);
+    
+    forEach(Object_keys(win), function (key) {
+        // Avoid copying circular objects like `top` and `window` by only
+        // updating existing context properties or new properties in the `win`
+        // that was only introduced after the eval.
+        if (key in context || indexOf(winKeys, key) === -1) {
+            context[key] = win[key];
+        }
+    });
+
+    forEach(globals, function (key) {
+        if (!(key in context)) {
+            defineProp(context, key, win[key]);
+        }
+    });
+    
+    document.body.removeChild(iframe);
+    
+    return res;
+};
+
+Script.prototype.runInThisContext = function () {
+    return eval(this.code); // maybe...
+};
+
+Script.prototype.runInNewContext = function (context) {
+    var ctx = Script.createContext(context);
+    var res = this.runInContext(ctx);
+
+    forEach(Object_keys(ctx), function (key) {
+        context[key] = ctx[key];
+    });
+
+    return res;
+};
+
+forEach(Object_keys(Script.prototype), function (name) {
+    exports[name] = Script[name] = function (code) {
+        var s = Script(code);
+        return s[name].apply(s, [].slice.call(arguments, 1));
+    };
+});
+
+exports.createScript = function (code) {
+    return exports.Script(code);
+};
+
+exports.createContext = Script.createContext = function (context) {
+    var copy = new Context();
+    if(typeof context === 'object') {
+        forEach(Object_keys(context), function (key) {
+            copy[key] = context[key];
+        });
+    }
+    return copy;
+};
+
+},{"indexof":20}],20:[function(require,module,exports){
+
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+},{}]},{},[])("/matchNumberRangeRegex.js")
 });

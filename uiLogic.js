@@ -38,7 +38,6 @@ function makeBlanks(dataArray) {
    for (i = 0; i < deleteMes.length; ++i) {
       deleteMes[i].onclick = deletePartentMaker(deleteMes[i]);
    }
-
 }
 
 function proccessCSVData(csvData) {
@@ -84,6 +83,31 @@ function addBlanks() {
 
 function processTemplate() {
    "use strict";
+   function makeTolerance(tolIn){
+      if(tolIn === ''){
+         return tolIn;
+      }
+      
+      var num = parseFloat(tolIn),
+          numIsNotNan = !isNaN(num);
+      
+      
+      console.log('num:',num);
+      console.log('numIsNotNan:',numIsNotNan);
+      console.log('tolIn:',tolIn);
+      
+      if(numIsNotNan && typeof tolIn === 'string'){
+         if(tolIn.charAt(tolIn.length) === '%'){
+            return tolIn;
+         } else if(numIsNotNan) {
+            return num;
+         } 
+      }
+      
+      //TODO give better feedback
+      throw 'not valid tolerance. SSEE'
+   }
+   
    var variables,
       numberOfBlanks = $('.blank').length,
       i,
@@ -103,7 +127,7 @@ function processTemplate() {
       dataFromUI.variables = JSON.parse(variables);
    } catch (e) {
       console.log(e.message);
-      alert("Variables box does not fit the correct format.");
+      alert("Variables box does is not correct JSON format.");
       return;
    }
 
@@ -114,7 +138,7 @@ function processTemplate() {
          text: $(startSelecter + '.text').val(),
          answers: JSON.parse($(startSelecter + '.answers').val()),
          isRegEx: $(startSelecter + '.isRegEx').val() === "on",
-         tolerance: Number($(startSelecter + '.tolerance').val()),
+         tolerance: makeTolerance($(startSelecter + '.tolerance').val()),
          numOfDigits: Number($(startSelecter + '.numOfDigits').val())
       });
    }

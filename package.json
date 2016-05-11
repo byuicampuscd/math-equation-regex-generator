@@ -5,7 +5,8 @@
    "main": "index.html",
    "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
-      "templates": "handlebars templates -f ./templates/hbTemplates.js"
+      "templates": "handlebars templates -f ./templates/hbTemplates.js",
+      "start": "live-server --port=9001 --wait=700"
    },
    "author": "Joshua McKinney and Kiven",
    "license": "UNLICENSED",
