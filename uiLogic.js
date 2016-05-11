@@ -136,7 +136,7 @@ function processTemplate() {
       dataFromUI.blanks.push({
          text: $(startSelecter + '.text').val(),
          answers: JSON.parse($(startSelecter + '.answers').val()),
-         isRegEx: $(startSelecter + '.isRegEx').val() === "on",
+         isRegEx: $(startSelecter + '.isRegEx:checked').length === 1,
          tolerance: makeTolerance($(startSelecter + '.tolerance').val()),
          numOfDigits: Number($(startSelecter + '.numOfDigits').val())
       });
