@@ -1,16 +1,18 @@
 {
-   "name": "quiz-bank-creator",
-   "version": "1.0.0",
-   "description": "Makes quiz banks for D2L",
-   "main": "index.html",
-   "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "templates": "handlebars templates -f ./templates/hbTemplates.js",
-      "start": "live-server --port=9001 --wait=700"
-   },
-   "author": "Joshua McKinney and Kiven",
-   "license": "UNLICENSED",
-   "dependencies": {
-      "handlebars": "^4.0.5"
-   }
+  "name": "quiz-bank-creator",
+  "version": "1.0.0",
+  "description": "Makes quiz banks for D2L",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "templates": "handlebars templates -f ./templates/hbTemplates.js",
+    "start": "live-server --port=9001 --wait=700",
+     "makeBrowser": "browserify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js"
+  },
+  "author": "Joshua McKinney and Kiven",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "handlebars": "^4.0.5",
+    "number-range-regex": "git+https://github.com/byuicampuscd/match-number-range.git"
+  }
 }

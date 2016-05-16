@@ -3,6 +3,9 @@
 
 function uiDataToQDbData(dataFromUI) {
    "use strict";
+   
+   //TODO Browserify this file so that node gets this!
+   var matchNumberRegex = require('number-range-regex');
 
    function notSameLength(firstKey, thisKey) {
       alert(firstKey + " and " + thisKey + " do not have the same amount of values. Fix and try again.");
