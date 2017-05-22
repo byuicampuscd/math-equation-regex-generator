@@ -1,7 +1,8 @@
 {
-  "name": "quiz-bank-creator",
+  "name": "math-equation-regex-generator",
   "version": "1.0.0",
   "description": "Makes quiz banks for D2L",
+  "author": "Joshua McKinney and Kiven",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,10 +10,9 @@
     "start": "live-server --port=9001 --wait=700",
      "makeBrowser": "browserify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js"
   },
-  "author": "Joshua McKinney and Kiven",
-  "license": "UNLICENSED",
   "dependencies": {
     "handlebars": "^4.0.5",
     "number-range-regex": "git+https://github.com/byuicampuscd/match-number-range.git"
-  }
+  },
+  "license": "UNLICENSED"
 }
